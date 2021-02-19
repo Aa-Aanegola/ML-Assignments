@@ -25,7 +25,7 @@ def load_data():
     np.insert(train_X, 0, 1, axis=1)
     
     test = pd.read_csv('./Local_Data/test.csv')
-    test_X = train.to_numpy()
+    test_X = test.to_numpy()
     test_y = test_X[:, -1]
     test_X = test_X[:, :-1]
     test_X[:, 0] = np.ones(test_X.shape[0])
@@ -35,9 +35,9 @@ def get_errors(id, vector):
     global X
     global y
     vector = np.array(vector)
-    for i in vector:
-        assert 0 <= abs(i) <= 10
-    assert len(vector) == 11
+    # for i in vector:
+    #     assert 0 <= abs(i) <= 10
+    # assert len(vector) == 11
     
     if train == None:
         load_data()
