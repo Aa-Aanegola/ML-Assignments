@@ -24,7 +24,7 @@ POPULATION_SIZE = 10
 MUTATION_PROBABILITY = 0.07
 ELITE_PERCENTAGE = 0.2
 BREED_PERCENTAGE = 0.6
-generations = 19
+generations = 20
 
 
 def gen_chromosome():
@@ -73,20 +73,27 @@ def mate(indi1, indi2):
     
     return Individual(child1)
 
+# population = []
+
+# population.append(Individual(overfit))
+# for i in range(POPULATION_SIZE-1):
+#     population.append(Individual(gen_chromosome()))
+
+
 population = []
 
-population.append(Individual(overfit))
-for i in range(POPULATION_SIZE-1):
-    population.append(Individual(gen_chromosome()))
+with open('dump.txt', 'r') as read_file:
+    temp = json.load(read_file)
+    for indi in temp:
+        population.append(Individual(indi[0]))
+        population[-1].fitness = indi[1]    
+    read_file.close()
 
 
 for i in range(generations):
     
     print(f"Generation: {i}")
     
-    for indi in population:
-        indi.mutate()
-        indi.set_fitness()
     
     population = sorted(population, key= lambda indi: (indi.fitness[1], indi.fitness[0]))
     
@@ -104,10 +111,13 @@ for i in range(generations):
         next_gen.append(child)
     
     population = next_gen
+
+    for indi in population:
+        indi.mutate()
+        indi.set_fitness()
     
 dump = []
 for indi in population:
-    indi.set_fitness()
     dump.append((indi.chromosome, indi.fitness))
 
 # print(dump)
