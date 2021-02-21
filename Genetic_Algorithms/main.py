@@ -24,7 +24,7 @@ POPULATION_SIZE = 10
 MUTATION_PROBABILITY = 0.07
 ELITE_PERCENTAGE = 0.2
 BREED_PERCENTAGE = 0.6
-generations = 20
+generations = 50
 
 
 def gen_chromosome():
