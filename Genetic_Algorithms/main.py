@@ -20,12 +20,11 @@ overfit = np.array(weights)
 scale = [0, 1e-12, 1e-13, 1e-11, 1e-10, 1e-15, 1e-16, 1e-5, 1e-6, 1e-8, 1e-10]
 
 
-POPULATION_SIZE = 20
+POPULATION_SIZE = 10
 MUTATION_PROBABILITY = 0.07
 ELITE_PERCENTAGE = 0.2
 BREED_PERCENTAGE = 0.6
-generations = 25
-
+generations = 50
 
 
 def gen_chromosome():
@@ -98,6 +97,10 @@ with open('dump.txt', 'r') as read_file:
         population.append(Individual(indi[0]))
         population[-1].fitness = indi[1]    
     read_file.close()
+
+while len(population) > POPULATION_SIZE:
+    population.pop(-1)
+
 
 while len(population) != POPULATION_SIZE:
     population.append(Individual(gen_chromosome()))
