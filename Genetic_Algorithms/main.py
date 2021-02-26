@@ -17,7 +17,7 @@ for i in range(len(weights)):
     weights[i] = float(weights[i])
 overfit = np.array(weights)
 
-scale = [0, 1e-12, 1e-13, 1e-11, 1e-10, 1e-15, 1e-16, 1e-5, 1e-6, 1e-8, 1e-10]
+scale = [0, 1e-12, 1e-13, 1e-11, 1e-10, 1e-15, 1e-15, 1e-5, 1e-6, 1e-8, 1e-10]
 
 
 POPULATION_SIZE = 10
@@ -61,7 +61,7 @@ class Individual:
         
         for i in range(11):
             if random.uniform(0, 1) < MUTATION_PROBABILITY:
-                new.append(self.chromosome[i] + np.random.uniform(-1, 1)*scale[i])
+                new.append(self.chromosome[i] + np.random.uniform(-0.1, 0.1)*scale[i])
             else:
                 new.append(self.chromosome[i])
             if new[-1] > 10:
