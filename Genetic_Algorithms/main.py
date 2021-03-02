@@ -21,10 +21,11 @@ scale = [0, 1e-12, 1e-13, 1e-11, 1e-10, 1e-15, 1e-15, 1e-5, 1e-6, 1e-8, 1e-10]
 
 
 POPULATION_SIZE = 10
-MUTATION_PROBABILITY = 0.07
+MUTATION_PROBABILITY = 0.1
 ELITE_PERCENTAGE = 0.2
 BREED_PERCENTAGE = 0.6
-generations = 50
+GENERATIONS = 80
+WEIGHT = 0.5
 
 
 def gen_chromosome():
@@ -52,8 +53,8 @@ class Individual:
         
     # Calculate the fitness of the individual (lexicographic distance)
     def set_fitness(self):
-        self.fitness = get_errors(ID, self.chromosome)
-
+        errors = get_errors(ID, self.chromosome)
+        self.fitness = WEIGHT * errors[1] + (1-WEIGHT)*errors[0]
         
     # Mutate to change some genes
     def mutate(self):
@@ -107,12 +108,12 @@ while len(population) != POPULATION_SIZE:
     population[-1].set_fitness()
 
 
-for i in range(generations):
+for i in range(GENERATIONS):
     
     print(f"Generation: {i}")
     
     
-    population = sorted(population, key= lambda indi: (indi.fitness[1], indi.fitness[0]))
+    population = sorted(population, key= lambda indi: indi.fitness)
     
     for indi in population:
         print(indi.fitness)
@@ -133,6 +134,9 @@ for i in range(generations):
         indi.mutate()
         indi.set_fitness()
     
+
+population = sorted(population, key= lambda indi: indi.fitness)    
+
 dump = []
 for indi in population:
     dump.append((indi.chromosome, indi.fitness))
