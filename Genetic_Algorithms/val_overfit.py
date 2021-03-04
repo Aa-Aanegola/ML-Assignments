@@ -6,17 +6,6 @@ import requests
 
 ID = "n3eEadyA2H45SSH97P9JCgWFqajNk8pvx086l1tVwFCEs9sPkT"
 
-weight_file = open("overfit.txt", "r")
-weights = weight_file.read()
-weights = weights.replace('[', '')
-weights = weights.replace(']', '')
-weights = weights.replace(' ', '')
-weights = weights.replace('\n', '')
-weights = weights.split(',')
-for i in range(len(weights)):
-    weights[i] = float(weights[i])
-overfit = np.array(weights)
-
 scale = [0, 1e-12, 1e-13, 1e-11, 1e-10, 1e-15, 1e-15, 1e-5, 1e-6, 1e-8, 1e-9]
 
 
@@ -53,8 +42,7 @@ class Individual:
         
     # Calculate the fitness of the individual (lexicographic distance)
     def set_fitness(self):
-        errors = get_errors(ID, self.chromosome)
-        self.fitness = WEIGHT * errors[1] + (1-WEIGHT)*errors[0]
+        self.fitness = get_errors(ID, self.chromosome)
         
     # Mutate to change some genes
     def mutate(self):
@@ -92,7 +80,7 @@ def mate(indi1, indi2):
 
 population = []
 
-with open('dump.txt', 'r') as read_file:
+with open('dump2.txt', 'r') as read_file:
     temp = json.load(read_file)
     for indi in temp:
         population.append(Individual(indi[0]))
@@ -113,7 +101,8 @@ for i in range(GENERATIONS):
     print(f"Generation: {i}")
     
     
-    population = sorted(population, key= lambda indi: indi.fitness)
+    population = sorted(population, key= lambda indi: (indi.fitness[1], indi.fitness[0]))
+    
     
     for indi in population:
         print(indi.fitness)
@@ -133,9 +122,8 @@ for i in range(GENERATIONS):
     for indi in population:
         indi.mutate()
         indi.set_fitness()
-    
 
-population = sorted(population, key= lambda indi: indi.fitness)    
+population = sorted(population, key= lambda indi: (indi.fitness[1], indi.fitness[0]))   
 
 dump = []
 for indi in population:
@@ -143,5 +131,5 @@ for indi in population:
 
 # print(dump)
 
-with open ('dump.txt', 'w') as write_file:
+with open ('dump2.txt', 'w') as write_file:
     json.dump(dump , write_file, indent=2)
