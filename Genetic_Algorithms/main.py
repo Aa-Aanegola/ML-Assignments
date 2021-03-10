@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from Local_Data.client import *
+from client import *
 import json
 import requests
 from tabulate import tabulate
@@ -27,7 +27,7 @@ MUTATION_PROBABILITY = 0.08
 ELITE_PERCENTAGE = 0.2
 BREED_PERCENTAGE = 0.6
 GENERATIONS = 100
-WEIGHT = 0.55
+WEIGHT = 0.5
 
 
 fd = open('gen.txt', 'w')
@@ -187,11 +187,11 @@ fd.write(tabulate(table, headers=headers, tablefmt="github"))
 fd.close()
 fd2.close()
 
-# dump = []
-# for indi in population:
-#     dump.append((indi.chromosome, indi.fitness))
+dump = []
+for indi in population:
+    dump.append((indi.chromosome, indi.fitness))
 
-# # print(dump)
+# print(dump)
 
-# with open ('dump.txt', 'w') as write_file:
-#     json.dump(dump , write_file, indent=2)
+with open ('dump.txt', 'w') as write_file:
+    json.dump(dump , write_file, indent=2)
