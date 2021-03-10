@@ -1,8 +1,10 @@
 import random
 import numpy as np
-from client import *
+from Local_Data.client import *
 import json
 import requests
+from tabulate import tabulate
+
 
 ID = "n3eEadyA2H45SSH97P9JCgWFqajNk8pvx086l1tVwFCEs9sPkT"
 
@@ -17,16 +19,19 @@ for i in range(len(weights)):
     weights[i] = float(weights[i])
 overfit = np.array(weights)
 
-scale = [0, 1e-12, 1e-13, 1e-11, 1e-10, 1e-15, 1e-15, 1e-5, 1e-6, 1e-8, 1e-9]
+scale = [0, 1e-13, 1e-13, 1e-11, 1e-10, 1e-15, 1e-16, 1e-5, 1e-6, 1e-8, 1e-9]
 
 
 POPULATION_SIZE = 10
-MUTATION_PROBABILITY = 0.1
+MUTATION_PROBABILITY = 0.08
 ELITE_PERCENTAGE = 0.2
 BREED_PERCENTAGE = 0.6
-GENERATIONS = 40
-WEIGHT = 0.5
+GENERATIONS = 100
+WEIGHT = 0.55
 
+
+fd = open('gen.txt', 'w')
+fd2 = open('bef_mut.txt', 'w')
 
 def gen_chromosome():
 
@@ -46,14 +51,21 @@ def gen_chromosome():
 
 
 class Individual:
+    id = 0
     def __init__(self, chromosome):
         self.chromosome = chromosome
+        self.train = None
+        self.val = None
         self.fitness = None
-
+        self.id = Individual.id
+        Individual.id += 1
+        self.parents = (None, None)
         
     # Calculate the fitness of the individual (lexicographic distance)
     def set_fitness(self):
         errors = get_errors(ID, self.chromosome)
+        self.train = errors[0]
+        self.val = errors[1]
         self.fitness = WEIGHT * errors[1] + (1-WEIGHT)*errors[0]
         
     # Mutate to change some genes
@@ -114,21 +126,44 @@ for i in range(GENERATIONS):
     
     
     population = sorted(population, key= lambda indi: indi.fitness)
-    
+
+    table = []
+    headers = None    
     for indi in population:
-        print(indi.fitness)
-        
+        print(indi.fitness, indi.train, indi.val)
+        dic = indi.__dict__
+        headers = list(dic.keys())
+        table.append(list(dic.values()))
+    
+    fd.write(f"\n\nGeneration: {i}\n\n")
+    fd.write(tabulate(table, headers=headers, tablefmt="github"))
+     
     next_gen = []
     
     next_gen.extend(population[:int(ELITE_PERCENTAGE*POPULATION_SIZE)])
     
-    for i in range(POPULATION_SIZE - int(ELITE_PERCENTAGE*POPULATION_SIZE)):
+    for x in range(POPULATION_SIZE - int(ELITE_PERCENTAGE*POPULATION_SIZE)):
         p1 = random.choice(population[:int(BREED_PERCENTAGE*POPULATION_SIZE)])
         p2 = random.choice(population[:int(BREED_PERCENTAGE*POPULATION_SIZE)])
         child = mate(p1, p2)
+        child.parents = (p1.id, p2.id)
         next_gen.append(child)
     
     population = next_gen
+
+    table = []
+    headers = None
+    for indi in population:
+        dic = indi.__dict__
+        dic.pop("fitness")
+        dic.pop("val")
+        dic.pop("train")
+        headers = list(dic.keys())
+        table.append(list(dic.values()))
+    
+    j = i+1
+    fd2.write(f"\n\nGeneration: {j}\n\n")
+    fd2.write(tabulate(table, headers=headers, tablefmt="github"))
 
     for indi in population:
         indi.mutate()
@@ -136,12 +171,27 @@ for i in range(GENERATIONS):
     
 
 population = sorted(population, key= lambda indi: indi.fitness)    
-
-dump = []
+for i in range(len(population)):
+        population[i].id = i
+table = []
+headers = None
 for indi in population:
-    dump.append((indi.chromosome, indi.fitness))
+    print(indi.fitness, indi.train, indi.val)
+    dic = indi.__dict__
+    headers = list(dic.keys())
+    table.append(list(dic.values()))
 
-# print(dump)
+fd.write(f"Generation: 100\n")
+fd.write(tabulate(table, headers=headers, tablefmt="github"))
+    
+fd.close()
+fd2.close()
 
-with open ('dump.txt', 'w') as write_file:
-    json.dump(dump , write_file, indent=2)
+# dump = []
+# for indi in population:
+#     dump.append((indi.chromosome, indi.fitness))
+
+# # print(dump)
+
+# with open ('dump.txt', 'w') as write_file:
+#     json.dump(dump , write_file, indent=2)
