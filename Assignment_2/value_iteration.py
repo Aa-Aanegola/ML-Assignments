@@ -137,7 +137,7 @@ def take_action(pos, mat, arw, MM, hel, act):
             ret.append({1.00 : ("E", mat, arw, MM, hel)})
     if act == "SHOOT":
         if pos == "C":
-            ret.append({0.50 : (pos, mat, str(int(arw)-1)), MM, str(int(hel)-25)})
+            ret.append({0.50 : (pos, mat, str(int(arw)-1), MM, str(int(hel)-25))})
             ret.append({0.50 : (pos, mat, str(int(arw)-1), MM, hel)})
         if pos == "E":
             ret.append({0.90 : (pos, mat, str(int(arw)-1), MM, str(int(hel)-25))})
@@ -160,3 +160,5 @@ def take_action(pos, mat, arw, MM, hel, act):
         ret.append({0.75 : (pos, str(int(mat)+1), arw, MM, hel)})
         ret.append({0.25 : (pos, mat, arw, MM, hel)})
     return ret
+
+print(take_action("C", "1", "2", "D", "75", "SHOOT"))
