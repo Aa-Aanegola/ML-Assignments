@@ -51,6 +51,7 @@ for i in range(len(pos)):
         dim0.append(dim1)
     value.append(dim0)
 
+# Returns a boolean that indicates whether the action is possible given the state
 def actionPossible(pos, mat, arw, MM, hel, act):
     if health == 0 and act != "NONE":
         return False
@@ -91,3 +92,71 @@ def actionPossible(pos, mat, arw, MM, hel, act):
         if health == "0":
             return True
         return False 
+
+# Returns a list of state dictionaries with the probability and the tuple of the state
+def take_action(pos, mat, arw, MM, hel, act):
+    ret = []
+    if act == "UP":
+        if pos == "C":
+            ret.append({0.85 : ("N", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+        if pos == "S":
+            ret.append({0.85 : ("C", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+    if act == "DOWN":
+        if pos == "C":
+            ret.append({0.85 : ("S", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+        if pos == "N":
+            ret.append({0.85 : ("C", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+    if act == "LEFT":
+        if pos == "C":
+            ret.append({0.85 : ("W", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+        if pos == "E":
+            ret.append({1.00 : ("C", mat, arw, MM, hel)})
+    if act == "RIGHT":
+        if pos == "C":
+            ret.append({1.00 : ("E", mat, arw, MM, hel)})
+        if pos == "W":
+            ret.append({1.00 : ("C", mat, arw, MM, hel)})
+    if act == "STAY":
+        if pos == "C":
+            ret.append({0.85 : ("C", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+        if pos == "N":
+            ret.append({0.85 : ("N", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+        if pos == "S":
+            ret.append({0.85 : ("S", mat, arw, MM, hel)})
+            ret.append({0.15 : ("E", mat, arw, MM, hel)})
+        if pos == "W":
+            ret.append({1.00 : ("W", mat, arw, MM, hel)})
+        if pos == "E":
+            ret.append({1.00 : ("E", mat, arw, MM, hel)})
+    if act == "SHOOT":
+        if pos == "C":
+            ret.append({0.50 : (pos, mat, str(int(arw)-1)), MM, str(int(hel)-25)})
+            ret.append({0.50 : (pos, mat, str(int(arw)-1), MM, hel)})
+        if pos == "E":
+            ret.append({0.90 : (pos, mat, str(int(arw)-1), MM, str(int(hel)-25))})
+            ret.append({0.10 : (pos, mat, str(int(arw)-1), MM, hel)})
+        if pos == "W":
+            ret.append({0.25 : (pos, mat, str(int(arw)-1), MM, str(int(hel)-25))})
+            ret.append({0.75 : (pos, mat, str(int(arw)-1), MM, hel)})
+    if act == "HIT":
+        if pos == "C":
+            ret.append({0.10 : (pos, mat, arw, MM, str(max(0, int(hel-50))))})
+            ret.append({0.90 : (pos, mat, arw, MM, hel)})
+        if pos == "E":
+            ret.append({0.20 : (pos, mat, arw, MM, str(max(0, int(hel-50))))})
+            ret.append({0.80 : (pos, mat, arw, MM, hel)})
+    if act == "CRAFT":
+        ret.append({0.50 : (pos, str(int(mat)-1), str(min(3, int(arw)+1)), MM, hel)})
+        ret.append({0.35 : (pos, str(int(mat)-1), str(min(3, int(arw)+2)), MM, hel)})
+        ret.append({0.15 : (pos, str(int(mat)-1), str(min(3, int(arw)+3)), MM, hel)})
+    if act == "GATHER":
+        ret.append({0.75 : (pos, str(int(mat)+1), arw, MM, hel)})
+        ret.append({0.25 : (pos, mat, arw, MM, hel)})
+    return ret
