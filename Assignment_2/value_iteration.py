@@ -186,10 +186,12 @@ bellmanError = 0.001
 stepCost = -20
 atkRew = -40
 gamma = 0.999
+finalRew = 50
 delta = inf
 j = 0
 
 f = open('temp.txt', 'w+')
+
 
 while delta > bellmanError:
     newVal = copy.deepcopy(val)
@@ -205,8 +207,8 @@ while delta > bellmanError:
                 for mm in MM.keys():
                     for hel in HEL.keys():
                         if hel == "0":
-                            newVal[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]] = 50
-                            print(f"({pos},{mat},{arw},{mm},{hel}):NONE=[50]", file=f)
+                            newVal[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]] = 0
+                            print(f"({pos},{mat},{arw},{mm},{hel}):NONE=[0.000]", file=f)
                             continue
                         mx = -inf
                         for act in ACT.keys():
@@ -218,34 +220,45 @@ while delta > bellmanError:
                                 for i in ret:
                                     prob = list(i.keys())[0]
                                     dat = i[prob]
-                                    actVal += 0.8*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
-                                    actVal += 0.2*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM["R"]][HEL[dat[4]]])
+                                    if dat[4] == "0":
+                                        actVal += 0.8*prob*(finalRew + stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
+                                        actVal += 0.2*prob*(finalRew + stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM["R"]][HEL[dat[4]]])
+                                    else:
+                                        actVal += 0.8*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
+                                        actVal += 0.2*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM["R"]][HEL[dat[4]]])
                             else:
                                 ret = takeAction(pos, mat, arw, mm, hel, act)
                                 for i in ret:
                                     prob = list(i.keys())[0]
                                     dat = i[prob]
                                     if pos in mmReach:
-                                        actVal += 0.5*prob*(atkRew + gamma*val[POS[pos]][MAT[mat]][ARW["0"]][MM["D"]][HEL[str(min(100, int(hel)+25))]])
-                                        actVal += 0.5*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
+                                        actVal += 0.5*prob*(stepCost + atkRew + gamma*val[POS[pos]][MAT[mat]][ARW["0"]][MM["D"]][HEL[str(min(100, int(hel)+25))]])
+                                        if dat[4] == "0":
+                                            actVal += 0.5*prob*(finalRew + stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
+                                        else:
+                                            actVal += 0.5*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
                                     else:
-                                        actVal += 0.5*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM["D"]][HEL[dat[4]]])
-                                        actVal += 0.5*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
+                                        if dat[4] == "0":
+                                            actVal += 0.5*prob*(finalRew + stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM["D"]][HEL[dat[4]]])
+                                            actVal += 0.5*prob*(finalRew + stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
+                                        else:
+                                            actVal += 0.5*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM["D"]][HEL[dat[4]]])
+                                            actVal += 0.5*prob*(stepCost + gamma*val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]])
                             if actVal > mx:
                                 mx = actVal
                                 optAct = act
                         newVal[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]] = mx
-                        print(f"({pos},{mat},{arw},{mm},{hel}):{optAct}=[{mx:.2f}]", file=f)
+                        print(f"({pos},{mat},{arw},{mm},{hel}):{optAct}=[{mx:.3f}]", file=f)
                         
                         delta = max(delta, abs(mx - val[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]]))
     val = copy.deepcopy(newVal)
     
 
 # pos = "C"
-# mat = "2"
-# arw = "0"
+# mat = "0"
+# arw = "2"
 # mm = "R"
-# hel = "100"
+# hel = "75"
 # score = 0
 
 # while hel != "0":
@@ -258,7 +271,7 @@ while delta > bellmanError:
 #         if pos in mmReach:
 #             arw = "0"
 #             hel = str(min(int(hel)+25, 100))
-#             score += atkRew
+#             score += atkRew + stepCost
 #             print(f"<MM Attacked> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION INCAPACITATED : SCORE={score}", file=f)
 #         else:
 #             print(f"<MM Missed> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION VIABLE : SCORE={score}", file=f)
@@ -284,5 +297,5 @@ while delta > bellmanError:
 #     pos, mat, arw, mm, hel = nxtState
 
 
-# score += 50
+# score += finalRew
 # print(f"<MM Defeated> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION NONE : SCORE={score}", file=f)
