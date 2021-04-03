@@ -231,6 +231,8 @@ gamma = 0.999
 stepCost = -20
 atkRew = -40
 
+np.set_printoptions(threshold=np.inf)
+
 for i in range(600):
     pos, mat, arw, mm, hel = getState(i)
     if hel == "100" and mm == "D" and arw == "0" and mat == "0":
@@ -288,13 +290,22 @@ for i in range(len(alpha)):
 alpha = np.array(alpha)
 alpha = alpha.reshape((600, 1))
 
+print(x.value)
 
 constraints = [cp.matmul(A, x) == alpha, x >= 0]
 objective = cp.Maximize(cp.matmul(R, x))
 problem = cp.Problem(objective, constraints)
 
+
 print("setup complete")
 
-solution = problem.solve()
+solution = problem.solve(verbose=True)
+
+if problem.status not in ["infeasible", "unbounded"]:
+    # Otherwise, problem.value is inf or -inf, respectively.
+    print("Optimal value: %s" % problem.value)
+for variable in problem.variables():
+    print("Variable %s: value %s" % (variable.name(), variable.value))
+
 print(solution)
 print(x.value)
