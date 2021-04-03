@@ -190,13 +190,13 @@ finalRew = 50
 delta = inf
 j = 0
 
-f = open('./outputs/part_2_trace.txt', 'w+')
+f = open('./outputs/part_2_sim_2.txt', 'w+')
 
 
 while delta > bellmanError:
     newVal = copy.deepcopy(val)
     
-    print(f"iteration={j}", file=f)
+    #print(f"iteration={j}", file=f)
     j += 1
     
     delta = 0
@@ -208,7 +208,7 @@ while delta > bellmanError:
                     for hel in HEL.keys():
                         if hel == "0":
                             newVal[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]] = 0
-                            print(f"({pos},{mat},{arw},{mm},{hel}):NONE=[0.000]", file=f)
+                            #print(f"({pos},{mat},{arw},{mm},{hel}):NONE=[0.000]", file=f)
                             continue
                         mx = -inf
                         for act in ACT.keys():
@@ -248,54 +248,61 @@ while delta > bellmanError:
                                 mx = actVal
                                 optAct = act
                         newVal[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]] = mx
-                        print(f"({pos},{mat},{arw},{mm},{hel}):{optAct}=[{mx:.3f}]", file=f)
+                        #print(f"({pos},{mat},{arw},{mm},{hel}):{optAct}=[{mx:.3f}]", file=f)
                         
                         delta = max(delta, abs(mx - val[POS[pos]][MAT[mat]][ARW[arw]][MM[mm]][HEL[hel]]))
     val = copy.deepcopy(newVal)
     
 
-# pos = "C"
-# mat = "0"
-# arw = "2"
-# mm = "R"
-# hel = "75"
-# score = 0
+pos = "C"
+mat = "2"
+arw = "0"
+mm = "R"
+hel = "100"
+score = 0
+stepCost = -20
 
-# while hel != "0":
-#     optAct = "NONE"
-#     mx = -inf
-#     if mm == "D" and random.uniform(0, 1) < 0.2:
-#         mm = "R"
-#     elif mm == "R" and random.uniform(0, 1) < 0.5:
-#         mm = "D"
-#         if pos in mmReach:
-#             arw = "0"
-#             hel = str(min(int(hel)+25, 100))
-#             score += atkRew + stepCost
-#             print(f"<MM Attacked> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION INCAPACITATED : SCORE={score}", file=f)
-#         else:
-#             print(f"<MM Missed> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION VIABLE : SCORE={score}", file=f)
+while hel != "0":
+    optAct = "NONE"
+    mx = -inf
+    if mm == "D" and random.uniform(0, 1) < 0.2:
+        print(f"<MM now ready to attack>", file=f)
+        mm = "R"
+    elif mm == "D":
+        print(f"<MM still dormant>", file=f)
+            
+    elif mm == "R" and random.uniform(0, 1) < 0.5:
+        mm = "D"
+        if pos in mmReach:
+            arw = "0"
+            hel = str(min(int(hel)+25, 100))
+            score += atkRew + stepCost
+            print(f"<MM Attacked> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION INCAPACITATED : SCORE={score}", file=f)
+            continue
+        else:
+            print(f"<MM Missed> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION VIABLE : SCORE={score}", file=f)
+    else:
+        print(f"<MM still ready>", file=f)
+    for act in ACT.keys():
+        if not actionPossible(pos, mat, arw, mm, hel, act):
+            continue
         
-#     for act in ACT.keys():
-#         if not actionPossible(pos, mat, arw, mm, hel, act):
-#             continue
-        
-#         ret = takeAction(pos, mat, arw, mm, hel, act)
-#         expUtl = 0
-#         for it in ret:
-#             prob = list(it.keys())[0]
-#             dat = it[prob]
-#             expUtl += prob * val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]]
-#         if expUtl > mx:
-#             optAct = act
-#             mx = expUtl
+        ret = takeAction(pos, mat, arw, mm, hel, act)
+        expUtl = 0
+        for it in ret:
+            prob = list(it.keys())[0]
+            dat = it[prob]
+            expUtl += prob * val[POS[dat[0]]][MAT[dat[1]]][ARW[dat[2]]][MM[dat[3]]][HEL[dat[4]]]
+        if expUtl > mx:
+            optAct = act
+            mx = expUtl
     
-#     ret = takeAction(pos, mat, arw, mm, hel, optAct)
-#     nxtState = sim(ret)
-#     score += stepCost
-#     print(f"STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION {optAct} : NEW STATE=({nxtState}) : SCORE={score}", file=f)
-#     pos, mat, arw, mm, hel = nxtState
+    ret = takeAction(pos, mat, arw, mm, hel, optAct)
+    nxtState = sim(ret)
+    score += stepCost
+    print(f"STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION {optAct} : NEW STATE=({nxtState}) : SCORE={score}", file=f)
+    pos, mat, arw, mm, hel = nxtState
 
 
-# score += finalRew
-# print(f"<MM Defeated> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION NONE : SCORE={score}", file=f)
+score += finalRew
+print(f"<MM Defeated> STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION NONE : SCORE={score}", file=f)
