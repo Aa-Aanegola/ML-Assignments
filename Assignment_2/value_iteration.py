@@ -183,7 +183,7 @@ def sim(actList):
 mmReach = ["C", "E"]
 
 bellmanError = 0.001
-stepCost = -20
+stepCost = -1
 atkRew = -40
 gamma = 0.999
 finalRew = 50
@@ -293,7 +293,7 @@ while delta > bellmanError:
 #     ret = takeAction(pos, mat, arw, mm, hel, optAct)
 #     nxtState = sim(ret)
 #     score += stepCost
-#     print(f"STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION {optAct} : NEW STATE=({nxtState})SCORE={score}", file=f)
+#     print(f"STATE=({pos}, {mat}, {arw}, {mm}, {hel}) : ACTION {optAct} : NEW STATE=({nxtState}) : SCORE={score}", file=f)
 #     pos, mat, arw, mm, hel = nxtState
 
 
