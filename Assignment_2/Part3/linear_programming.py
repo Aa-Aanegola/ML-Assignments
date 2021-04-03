@@ -220,9 +220,10 @@ def takeAction(pos, mat, arw, mm, hel, act):
         ret.append({0.25 : (pos, mat, arw, mm, hel)})
     return ret
 
-x = cp.Variable(shape=(600, 1), name="x")
-A = [[0 for i in range(600)] for j in range(6000)]
-bound = [0 for i in range(6000)]
+x = cp.Variable(shape=(6000, 1), name="x")
+A = [[0 for i in range(6000)] for j in range(600)]
+alpha = [0 for i in range(600)]
+R = [0 for i in range(6000)]
 
 mmReach = ["C", "E"]
 
@@ -230,6 +231,10 @@ gamma = 0.999
 stepCost = -20
 atkRew = -40
 
+for i in range(600):
+    pos, mat, arw, mm, hel = getState(i)
+    if hel == "100" and mm == "D" and arw == "0" and mat == "0":
+        alpha[i] = 0.2
 
 for i in range(600):
     pos, mat, arw, mm, hel = getState(i)
@@ -238,31 +243,54 @@ for i in range(600):
         if not actionPossible(pos, mat, arw, mm, hel, act):
             continue
         ret = takeAction(pos, mat, arw, mm, hel, act)
-        A[10*i+j][i] = -1
         if mm == "D":
             for it in ret:
                 prob = list(it.keys())[0]
                 dat = it[prob]
-                A[10*i+j][getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])] += prob*0.8
-                A[10*i+j][getIndex(dat[0], dat[1], dat[2], "R", dat[4])] += prob*0.2
-                bound[10*i+j] += prob*stepCost
+                if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
+                    A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][10*i+j] -= prob*0.2
+                    A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.2
+                else:
+                    A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][10*i+j] -= prob*0.8
+                    A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][10*i+j] -= prob*0.2
+                    A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob
+                R[10*i+j] += prob*stepCost
         else:
             for it in ret:
                 prob = list(it.keys())[0]
                 dat = it[prob]
-                A[10*i+j][getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])] += prob*0.5
-                if pos in mmReach:
-                    A[10*i+j][getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))] += prob*0.5
-                    bound[10*i+j] += prob*atkRew
+                if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
+                    if pos in mmReach:
+                        A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][10*i+j] -= prob*0.5
+                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
+                        R[10*i+j] += prob*atkRew
+                    else:
+                        A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][10*i+j] -= prob*0.5
+                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
+                    R[10*i+j] += prob*stepCost
+
                 else:
-                    A[10*i+j][getIndex(dat[0], dat[1], dat[2], "D", dat[4])] += prob*0.5
-                bound[10*i+j] += prob*stepCost
+                    A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][10*i+j] -= prob*0.5
+                    A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
+                    if pos in mmReach:
+                        A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][10*i+j] -= prob*0.5
+                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
+                        R[10*i+j] += prob*atkRew
+                    else:
+                        A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][10*i+j] -= prob*0.5
+                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
+                    R[10*i+j] += prob*stepCost
                 
 A = np.array(A)
-bound = np.array(A)
+R = np.array(R)
+for i in range(len(alpha)):
+     alpha[i] = np.array(alpha[i])
+alpha = np.array(alpha)
+alpha = alpha.reshape((600, 1))
 
-constraints = [cp.matmul(A, x) <= bound, x <= 0, x>=-10]
-objective = cp.Maximize(cp.sum(x, axis=0))
+
+constraints = [cp.matmul(A, x) == alpha, x >= 0]
+objective = cp.Maximize(cp.matmul(R, x))
 problem = cp.Problem(objective, constraints)
 
 print("setup complete")
