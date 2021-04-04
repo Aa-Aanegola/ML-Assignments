@@ -97,9 +97,6 @@ rACT = {
 
 
 
-def getIndex(pos, mat, arw, mm, hel):
-    return int(120*POS[pos]+40*MAT[mat]+10*ARW[arw]+5*MM[mm]+HEL[hel])
-
 def getState(ind):
     pos = ind//120
     ind %= 120
@@ -220,6 +217,24 @@ def takeAction(pos, mat, arw, mm, hel, act):
         ret.append({0.25 : (pos, mat, arw, mm, hel)})
     return ret
 
+
+stateActions = {}
+
+ind = 0
+for i in range(600):
+    for act in ACT:
+        pos, mat, arw, mm, hel = getState(i)
+        if actionPossible(pos, mat, arw, mm, hel, act):
+            stateActions[(pos, mat, arw, mm, hel, act)] = ind
+            ind += 1
+
+for i in stateActions:
+    print(i)
+
+print(len(stateActions))
+
+exit()
+
 x = cp.Variable(shape=(6000, 1), name="x")
 A = [[0 for i in range(6000)] for j in range(600)]
 alpha = [0 for i in range(600)]
@@ -320,8 +335,11 @@ for i in range(600):
         pos, mat, arw, mm, hel = getState(i)
         if not actionPossible(pos, mat, arw, mm, hel, act):
             continue
+        print(getState(i), act, x.value[10*i+ACT[act]], R[10*i+ACT[act]])
+        
         if abs(x.value[10*i+j])*R[10*i+j] > mx:
             optAct = act
             mx = abs(x.value[10*i+j])*R[10*i+j]
     policy.append([getState(i), optAct])
-    print(getState(i), optAct, x.value[10*i+ACT[optAct]], R[10*i+ACT[optAct]])
+    print("Optimum: ", getState(i), optAct, x.value[10*i+ACT[optAct]], R[10*i+ACT[optAct]])
+    print()
