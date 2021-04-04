@@ -250,7 +250,8 @@ np.set_printoptions(threshold=np.inf)
 
 for i in range(600):
     pos, mat, arw, mm, hel = getState(i)
-    alpha[i] = 1.0/600
+    if mat == "0" and arw == "0" and mm == "D" and hel == "100":
+        alpha[i] = 0.2
 
 for i in range(len(stateActions)):
     pos, mat, arw, mm, hel, act = rstateActions[i]
