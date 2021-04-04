@@ -263,6 +263,8 @@ for i in range(600):
                     A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob
                 R[10*i+j] += prob*stepCost
         else:
+            if pos in mmReach:
+                R[10*i+j] += 0.5*atkRew
             for it in ret:
                 prob = list(it.keys())[0]
                 dat = it[prob]
@@ -270,7 +272,7 @@ for i in range(600):
                     if pos in mmReach:
                         A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][10*i+j] -= prob*0.5
                         A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-                        R[10*i+j] += prob*atkRew
+
                     else:
                         A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][10*i+j] -= prob*0.5
                         A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
@@ -282,7 +284,6 @@ for i in range(600):
                     if pos in mmReach:
                         A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][10*i+j] -= prob*0.5
                         A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-                        R[10*i+j] += prob*atkRew
                     else:
                         A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][10*i+j] -= prob*0.5
                         A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
@@ -297,7 +298,7 @@ alpha = alpha.reshape((600, 1))
 
 print(x.value)
 
-constraints = [cp.matmul(A, x) == alpha, x >= 0]
+constraints = [cp.matmul(A, x) == alpha, x >= 0.0]
 objective = cp.Maximize(cp.matmul(R, x))
 problem = cp.Problem(objective, constraints)
 
@@ -306,6 +307,21 @@ print("setup complete")
 
 solution = problem.solve(verbose=True)
 
-
 # print(solution)
 # print(x.value)
+
+policy = []
+
+for i in range(600):
+    mx = -100000
+    optAct = "NONE"
+    for j in range(10):
+        act = rACT[j]
+        pos, mat, arw, mm, hel = getState(i)
+        if not actionPossible(pos, mat, arw, mm, hel, act):
+            continue
+        if abs(x.value[10*i+j])*R[10*i+j] > mx:
+            optAct = act
+            mx = abs(x.value[10*i+j])*R[10*i+j]
+    policy.append([getState(i), optAct])
+    print(getState(i), optAct, x.value[10*i+ACT[optAct]], R[10*i+ACT[optAct]])
