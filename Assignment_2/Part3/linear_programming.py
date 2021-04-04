@@ -95,7 +95,8 @@ rACT = {
     9 : "NONE"
 }
 
-
+def getIndex(pos, mat, arw, mm, hel):
+    return 120*POS[pos]+40*MAT[mat]+10*ARW[arw]+5*MM[mm]+HEL[hel]
 
 def getState(ind):
     pos = ind//120
@@ -219,6 +220,7 @@ def takeAction(pos, mat, arw, mm, hel, act):
 
 
 stateActions = {}
+rstateActions = {}
 
 ind = 0
 for i in range(600):
@@ -226,6 +228,7 @@ for i in range(600):
         pos, mat, arw, mm, hel = getState(i)
         if actionPossible(pos, mat, arw, mm, hel, act):
             stateActions[(pos, mat, arw, mm, hel, act)] = ind
+            rstateActions[ind] = (pos, mat, arw, mm, hel, act)
             ind += 1
 
 for i in stateActions:
@@ -233,12 +236,11 @@ for i in stateActions:
 
 print(len(stateActions))
 
-exit()
 
-x = cp.Variable(shape=(6000, 1), name="x")
-A = [[0 for i in range(6000)] for j in range(600)]
+x = cp.Variable(shape=(len(stateActions), 1), name="x")
+A = [[0 for i in range(len(stateActions))] for j in range(600)]
 alpha = [0 for i in range(600)]
-R = [0 for i in range(6000)]
+R = [0 for i in range(len(stateActions))]
 
 mmReach = ["C", "E"]
 
@@ -253,61 +255,56 @@ for i in range(600):
     if hel == "100" and mm == "D" and arw == "0" and mat == "0":
         alpha[i] = 0.2
 
-for i in range(600):
-    pos, mat, arw, mm, hel = getState(i)
-    for j in range(10):
-        act = rACT[j]
-        if not actionPossible(pos, mat, arw, mm, hel, act):
-            continue
-        ret = takeAction(pos, mat, arw, mm, hel, act)
-        if hel == "0":
-            if act == "NONE":
-                A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += 1
-            continue
-        
-        if mm == "D":
-            for it in ret:
-                prob = list(it.keys())[0]
-                dat = it[prob]
-                if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
-                    A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][10*i+j] -= prob*0.2
-                    A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.2
-                else:
-                    A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][10*i+j] -= prob*0.8
-                    A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][10*i+j] -= prob*0.2
-                    A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob
-                R[10*i+j] += prob*stepCost
-        else:
-            if pos in mmReach:
-                R[10*i+j] += 0.5*atkRew
-            for it in ret:
-                prob = list(it.keys())[0]
-                dat = it[prob]
-                if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
-                    if pos in mmReach:
-                        A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][10*i+j] -= prob*0.5
-                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-
-                    else:
-                        A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][10*i+j] -= prob*0.5
-                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-                    R[10*i+j] += prob*stepCost
+for i in range(len(stateActions)):
+    pos, mat, arw, mm, hel, act = rstateActions[i]
+    ret = takeAction(pos, mat, arw, mm, hel, act)
+    if hel == "0":
+        if act == "NONE":
+            A[getIndex(pos, mat, arw, mm, hel)][i] += 1
+        continue
+    
+    if mm == "D":
+        for it in ret:
+            prob = list(it.keys())[0]
+            dat = it[prob]
+            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
+                A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][i] -= prob*0.2
+                A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.2
+            else:
+                A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][i] -= prob*0.8
+                A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][i] -= prob*0.2
+                A[getIndex(pos, mat, arw, mm, hel)][i] += prob
+            R[i] += prob*stepCost
+    else:
+        if pos in mmReach:
+            R[i] += 0.5*atkRew
+        for it in ret:
+            prob = list(it.keys())[0]
+            dat = it[prob]
+            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
+                if pos in mmReach:
+                    A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][i] -= prob*0.5
+                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
 
                 else:
-                    A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][10*i+j] -= prob*0.5
-                    A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-                    if pos in mmReach:
-                        A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][10*i+j] -= prob*0.5
-                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-                    else:
-                        A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][10*i+j] -= prob*0.5
-                        A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += prob*0.5
-                    R[10*i+j] += prob*stepCost
-                
+                    A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][i] -= prob*0.5
+                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
+                R[i] += prob*stepCost
+
+            else:
+                A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][i] -= prob*0.5
+                A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
+                if pos in mmReach:
+                    A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][i] -= prob*0.5
+                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
+                else:
+                    A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][i] -= prob*0.5
+                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
+                R[i] += prob*stepCost
+            
 A = np.array(A)
 R = np.array(R)
-for i in range(len(alpha)):
-     alpha[i] = np.array(alpha[i])
+
 alpha = np.array(alpha)
 alpha = alpha.reshape((600, 1))
 
@@ -335,11 +332,14 @@ for i in range(600):
         pos, mat, arw, mm, hel = getState(i)
         if not actionPossible(pos, mat, arw, mm, hel, act):
             continue
-        print(getState(i), act, x.value[10*i+ACT[act]], R[10*i+ACT[act]])
         
-        if abs(x.value[10*i+j])*R[10*i+j] > mx:
+        ind = stateActions[(pos, mat, arw, mm, hel, act)]
+        
+        print(getState(i), act, x.value[ind], R[ind])
+        
+        if x.value[ind]*R[ind] > mx:
             optAct = act
-            mx = abs(x.value[10*i+j])*R[10*i+j]
+            mx = x.value[ind]*R[ind]
     policy.append([getState(i), optAct])
-    print("Optimum: ", getState(i), optAct, x.value[10*i+ACT[optAct]], R[10*i+ACT[optAct]])
+    print("Optimum: ", getState(i), optAct, x.value[ind], R[ind])
     print()
