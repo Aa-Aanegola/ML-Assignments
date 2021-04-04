@@ -245,6 +245,11 @@ for i in range(600):
         if not actionPossible(pos, mat, arw, mm, hel, act):
             continue
         ret = takeAction(pos, mat, arw, mm, hel, act)
+        if hel == "0":
+            if act == "NONE":
+                A[getIndex(pos, mat, arw, mm, hel)][10*i+j] += 1
+            continue
+        
         if mm == "D":
             for it in ret:
                 prob = list(it.keys())[0]
@@ -301,11 +306,6 @@ print("setup complete")
 
 solution = problem.solve(verbose=True)
 
-if problem.status not in ["infeasible", "unbounded"]:
-    # Otherwise, problem.value is inf or -inf, respectively.
-    print("Optimal value: %s" % problem.value)
-for variable in problem.variables():
-    print("Variable %s: value %s" % (variable.name(), variable.value))
 
-print(solution)
-print(x.value)
+# print(solution)
+# print(x.value)
