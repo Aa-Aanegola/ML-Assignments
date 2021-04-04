@@ -1,5 +1,6 @@
 import numpy as np
 import cvxpy as cp
+import json
 
 POS = {
     "W" : 0, 
@@ -234,9 +235,6 @@ for i in range(600):
 for i in stateActions:
     print(i)
 
-print(len(stateActions))
-
-
 x = cp.Variable(shape=(len(stateActions), 1), name="x")
 A = [[0 for i in range(len(stateActions))] for j in range(600)]
 alpha = [0 for i in range(600)]
@@ -252,8 +250,7 @@ np.set_printoptions(threshold=np.inf)
 
 for i in range(600):
     pos, mat, arw, mm, hel = getState(i)
-    if hel == "100" and mm == "D" and arw == "0" and mat == "0":
-        alpha[i] = 0.2
+    alpha[i] = 1.0/600
 
 for i in range(len(stateActions)):
     pos, mat, arw, mm, hel, act = rstateActions[i]
@@ -267,7 +264,7 @@ for i in range(len(stateActions)):
         for it in ret:
             prob = list(it.keys())[0]
             dat = it[prob]
-            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
+            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == getIndex(pos, mat, arw, mm, hel):
                 A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][i] -= prob*0.2
                 A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.2
             else:
@@ -281,7 +278,7 @@ for i in range(len(stateActions)):
         for it in ret:
             prob = list(it.keys())[0]
             dat = it[prob]
-            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == i:
+            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == getIndex(pos, mat, arw, mm, hel):
                 if pos in mmReach:
                     A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][i] -= prob*0.5
                     A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
@@ -301,23 +298,19 @@ for i in range(len(stateActions)):
                     A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][i] -= prob*0.5
                     A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
                 R[i] += prob*stepCost
-            
+           
 A = np.array(A)
 R = np.array(R)
 
 alpha = np.array(alpha)
 alpha = alpha.reshape((600, 1))
 
-print(x.value)
 
 constraints = [cp.matmul(A, x) == alpha, x >= 0.0]
 objective = cp.Maximize(cp.matmul(R, x))
 problem = cp.Problem(objective, constraints)
 
-
-print("setup complete")
-
-solution = problem.solve(verbose=True)
+solution = problem.solve()
 
 # print(solution)
 # print(x.value)
@@ -335,11 +328,23 @@ for i in range(600):
         
         ind = stateActions[(pos, mat, arw, mm, hel, act)]
         
-        print(getState(i), act, x.value[ind], R[ind])
+        # print(getState(i), act, x.value[ind], R[ind])
         
         if x.value[ind]*R[ind] > mx:
             optAct = act
             mx = x.value[ind]*R[ind]
     policy.append([getState(i), optAct])
     print("Optimum: ", getState(i), optAct, x.value[ind], R[ind])
-    print()
+    # print()
+    
+dump = {}
+
+dump["a"] = A.tolist()
+dump["r"] = R.tolist()
+dump["x"] = x.value.tolist()
+dump["alpha"] = alpha.tolist()
+dump["policy"] = policy
+dump["objective"] = solution
+
+f = open("part_3_output.json", "w+");
+json.dump(dump, f)
