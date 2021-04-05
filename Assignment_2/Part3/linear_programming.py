@@ -131,7 +131,7 @@ def actionPossible(pos, mat, arw, mm, hel, act):
             return True
         return False
     if act == "STAY":
-        return True
+            return True
     if act == "SHOOT":
         if arw != "0" and pos != "N" and pos != "S":
             return True
@@ -232,9 +232,6 @@ for i in range(600):
             rstateActions[ind] = (pos, mat, arw, mm, hel, act)
             ind += 1
 
-for i in stateActions:
-    print(i)
-
 x = cp.Variable(shape=(len(stateActions), 1), name="x")
 A = [[0 for i in range(len(stateActions))] for j in range(600)]
 alpha = [0 for i in range(600)]
@@ -250,8 +247,8 @@ np.set_printoptions(threshold=np.inf)
 
 for i in range(600):
     pos, mat, arw, mm, hel = getState(i)
-    if mat == "0" and arw == "0" and mm == "D" and hel == "100":
-        alpha[i] = 0.2
+    if pos == "C" and mat == "2" and arw == "3" and mm == "R" and hel == "100":
+        alpha[i] = 1
 
 for i in range(len(stateActions)):
     pos, mat, arw, mm, hel, act = rstateActions[i]
@@ -265,13 +262,10 @@ for i in range(len(stateActions)):
         for it in ret:
             prob = list(it.keys())[0]
             dat = it[prob]
-            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == getIndex(pos, mat, arw, mm, hel):
-                A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][i] -= prob*0.2
-                A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.2
-            else:
-                A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][i] -= prob*0.8
-                A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][i] -= prob*0.2
-                A[getIndex(pos, mat, arw, mm, hel)][i] += prob
+            
+            A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][i] -= prob*0.8
+            A[getIndex(dat[0], dat[1], dat[2], "R", dat[4])][i] -= prob*0.2
+            A[getIndex(pos, mat, arw, mm, hel)][i] += prob
             R[i] += prob*stepCost
     else:
         if pos in mmReach:
@@ -279,26 +273,14 @@ for i in range(len(stateActions)):
         for it in ret:
             prob = list(it.keys())[0]
             dat = it[prob]
-            if getIndex(dat[0], dat[1], dat[2], dat[3], dat[4]) == getIndex(pos, mat, arw, mm, hel):
-                if pos in mmReach:
-                    A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][i] -= prob*0.5
-                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
 
-                else:
-                    A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][i] -= prob*0.5
-                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
-                R[i] += prob*stepCost
-
+            A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][i] -= prob*0.5
+            A[getIndex(pos, mat, arw, mm, hel)][i] += prob
+            if pos in mmReach:
+                A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][i] -= prob*0.5
             else:
-                A[getIndex(dat[0], dat[1], dat[2], dat[3], dat[4])][i] -= prob*0.5
-                A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
-                if pos in mmReach:
-                    A[getIndex(pos, mat, "0", "D", str(min(100, int(hel)+25)))][i] -= prob*0.5
-                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
-                else:
-                    A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][i] -= prob*0.5
-                    A[getIndex(pos, mat, arw, mm, hel)][i] += prob*0.5
-                R[i] += prob*stepCost
+                A[getIndex(dat[0], dat[1], dat[2], "D", dat[4])][i] -= prob*0.5
+            R[i] += prob*stepCost
            
 A = np.array(A)
 R = np.array(R)
@@ -313,9 +295,6 @@ problem = cp.Problem(objective, constraints)
 
 solution = problem.solve()
 
-# print(solution)
-# print(x.value)
-
 policy = []
 
 for i in range(600):
@@ -329,14 +308,10 @@ for i in range(600):
         
         ind = stateActions[(pos, mat, arw, mm, hel, act)]
         
-        # print(getState(i), act, x.value[ind], R[ind])
-        
-        if x.value[ind]*R[ind] > mx:
+        if x.value[ind] > mx:
             optAct = act
-            mx = x.value[ind]*R[ind]
+            mx = x.value[ind]
     policy.append([getState(i), optAct])
-    print("Optimum: ", getState(i), optAct, x.value[ind], R[ind])
-    # print()
     
 dump = {}
 
