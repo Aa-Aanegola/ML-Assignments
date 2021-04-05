@@ -317,8 +317,8 @@ dump = {}
 
 dump["a"] = A.tolist()
 dump["r"] = R.tolist()
-dump["x"] = x.value.tolist()
-dump["alpha"] = alpha.tolist()
+dump["x"] = x.value.flatten().tolist()
+dump["alpha"] = alpha.flatten().tolist()
 dump["policy"] = policy
 dump["objective"] = solution
 
