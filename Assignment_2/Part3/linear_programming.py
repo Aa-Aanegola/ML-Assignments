@@ -322,5 +322,5 @@ dump["alpha"] = alpha.flatten().tolist()
 dump["policy"] = policy
 dump["objective"] = solution
 
-f = open("part_3_output.json", "w+");
+f = open("part_3_output.json", "w+")
 json.dump(dump, f)
