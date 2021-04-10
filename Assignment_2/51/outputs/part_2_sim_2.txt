@@ -1,0 +1,32 @@
+<MM Attacked> STATE=(C, 2, 0, D, 100) : ACTION INCAPACITATED : SCORE=-60
+<MM now ready to attack>
+STATE=(C, 2, 0, R, 100) : ACTION UP : NEW STATE=(('N', '2', '0', 'R', '100')) : SCORE=-80
+<MM still ready>
+STATE=(N, 2, 0, R, 100) : ACTION CRAFT : NEW STATE=(('N', '1', '2', 'R', '100')) : SCORE=-100
+<MM Missed> STATE=(N, 1, 2, D, 100) : ACTION VIABLE : SCORE=-100
+STATE=(N, 1, 2, D, 100) : ACTION DOWN : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-120
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-140
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-160
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-180
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-200
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-220
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-240
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-260
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-280
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '100')) : SCORE=-300
+<MM still dormant>
+STATE=(E, 1, 2, D, 100) : ACTION HIT : NEW STATE=(('E', '1', '2', 'D', '50')) : SCORE=-320
+<MM still dormant>
+STATE=(E, 1, 2, D, 50) : ACTION SHOOT : NEW STATE=(('E', '1', '1', 'D', '25')) : SCORE=-340
+<MM now ready to attack>
+STATE=(E, 1, 1, R, 25) : ACTION SHOOT : NEW STATE=(('E', '1', '0', 'R', '0')) : SCORE=-360
+<MM Defeated> STATE=(E, 1, 0, R, 0) : ACTION NONE : SCORE=-310
