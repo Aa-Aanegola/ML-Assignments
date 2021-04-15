@@ -24,44 +24,48 @@ def main():
             for targetRow in range(2):
                 for targetCol in range(4):
                     for call in range(2):
-                        if targetRow != 1 or targetCol != 0:
+                        if agentRow != 1 or agentCol != 1 or call == 1:
                             continue
                         if agentRow == targetRow and agentCol == targetCol:
-                            continue           
+                            num += 1
+                            continue
                         if agentRow == targetRow+1 and agentCol == targetCol:
+                            num += 1
                             continue
                         if agentRow == targetRow-1 and agentCol == targetCol:
+                            num += 1
                             continue
                         if agentRow == targetRow and agentCol == targetCol+1:
+                            num += 1
                             continue
                         if agentRow == targetRow and agentCol == targetCol-1:
+                            num += 1
                             continue
-                        num += 1
 
     for agentRow in range(2):
         for agentCol in range(4):
             for targetRow in range(2):
                 for targetCol in range(4):
                     for call in range(2):
-                        if targetRow != 1 or targetCol != 0:
-                            print("0.0 ", end='')
+                        if agentRow != 1 or agentCol != 1 or call == 1:
+                            print("0.0", end=' ')
                             continue  
                         if agentRow == targetRow and agentCol == targetCol:
-                            print("0.0 ", end='')
+                            print(1.0/num, end=' ')
                             continue
                         if agentRow == targetRow+1 and agentCol == targetCol:
-                            print("0.0 ", end='')
+                            print(1.0/num, end=' ')
                             continue
                         if agentRow == targetRow-1 and agentCol == targetCol:
-                            print("0.0 ", end='')
+                            print(1.0/num, end=' ')
                             continue
                         if agentRow == targetRow and agentCol == targetCol+1:
-                            print("0.0 ", end='')
+                            print(1.0/num, end=' ')
                             continue
                         if agentRow == targetRow and agentCol == targetCol-1:
-                            print("0.0 ", end='')
+                            print(1.0/num, end=' ')
                             continue
-                        print(1.0/num, end=' ')
+                        print("0.0", end=' ')
     print()
     print()    
     
