@@ -1,0 +1,2 @@
+# SARSOP PoMDP Solver
+The goal of this part of the assignment was to convert a given PoMDP into a format that is readable by the sarsop solver, and to solve it. Since solving PoMDP's is an involved task, we used the sarsop solver in order to obtain a policy for the given PoMDP. Details on the sarsop solver can be found [here](https://github.com/AdaCompNUS/sarsop). The created pomdp files for the questions asked in the assignment are in the directory, and ```report.pdf``` contains our observations and conclusions. 
